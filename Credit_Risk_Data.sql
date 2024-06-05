@@ -2,7 +2,13 @@
 
 Data Cleaning Credit_Risk_Data
 
-
+Data Manipulation Language (DML): UPDATE, DELETE statements
+String Functions: REPLACE, LTRIM, RTRIM
+Subqueries: Used for calculating aggregates (mean) and finding duplicates.
+Common Table Expressions (CTEs): RowNumCTE
+Window Functions: ROW_NUMBER()
+Aggregate Functions: AVG()
+Case Statements: Used for data categorization and cleanup.
 
 */
 
