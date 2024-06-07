@@ -2,31 +2,30 @@
 
 Data Cleaning Credit_Risk_Data
 
-Data Manipulation Language (DML): UPDATE, DELETE statements
-String Functions: REPLACE, LTRIM, RTRIM
-Subqueries: Used for calculating aggregates (mean) and finding duplicates.
-Common Table Expressions (CTEs): RowNumCTE
-Window Functions: ROW_NUMBER()
-Aggregate Functions: AVG()
-Case Statements: Used for data categorization and cleanup.
+We're using some data manipulation tricks here:
+- UPDATE and DELETE statements for modifying data
+- String functions like REPLACE, LTRIM, RTRIM to tidy up text
+- Subqueries for calculating averages and spotting duplicates
+- CTEs (Common Table Expressions) for organizing rows
+- Window functions like ROW_NUMBER() to assign row numbers
+- Aggregate functions like AVG() to find mean values
+- CASE statements to categorize and clean data
 
 */
 
---Handling Irrelevant Characters and Values
--- Update `purpose` column to consolidate values like 'radiot tv'
+-- Cleaning up irrelevant characters and values
+-- We're standardizing the 'purpose' column to fix inconsistent values like 'radiot tv'
 
 UPDATE credit_customers
 SET purpose = REPLACE(purpose, 'radiot tv', 'radio/tv');
 
--- Remove leading and trailing spaces from text columns. (You can add more columns as needed.)
+-- Removing spaces etc. by Trimming them
 UPDATE credit_customers
 SET purpose = LTRIM(RTRIM(purpose)),
     checking_status = LTRIM(RTRIM(checking_status)), 
     credit_history = LTRIM(RTRIM(credit_history));
 
 --Dealing with Nulls
-
--- For numeric columns, impute with mean (e.g., `duration` & `credit_amount`)
 UPDATE credit_customers
 SET duration = (SELECT AVG(duration) FROM credit_customers)
 WHERE duration IS NULL;
@@ -35,7 +34,7 @@ UPDATE credit_customers
 SET credit_amount = (SELECT AVG(credit_amount) FROM credit_customers)
 WHERE credit_amount IS NULL;
 
--- For categorical columns, impute with mode (e.g., `checking_status`)
+--Using Subqueries for categorical columns, we'll use the most frequent value (mode)
 UPDATE credit_customers
 SET checking_status = (
     SELECT TOP 1 checking_status
@@ -45,13 +44,10 @@ SET checking_status = (
 )
 WHERE checking_status IS NULL;
 
--- For text fields, impute with 'Unknown' (e.g., `purpose`, `savings_status`, etc.)
+-- For text fields, we'll fill in with 'Unknown'
 UPDATE credit_customers
 SET purpose = 'Unknown'
 WHERE purpose IS NULL;
-
--- Repeat for other relevant text columns.
-
 
 --Identifying and Handling Duplicates
 
@@ -60,7 +56,7 @@ WITH RowNumCTE AS (
            ROW_NUMBER() OVER (PARTITION BY customer_id, credit_amount, duration ORDER BY customer_id) AS RowNum
     FROM credit_customers
 )
-DELETE FROM credit_customers  -- Corrected: Delete from the main table
+DELETE FROM credit_customers 
 WHERE customer_id IN (
     SELECT customer_id
     FROM RowNumCTE
@@ -70,7 +66,8 @@ WHERE customer_id IN (
 SELECT *
 	FROM credit_customers
 
-
+--I have identified some common terms and I will try to categorize them properly by correcting their values
+	
 -- Update checking_status
 UPDATE credit_customers
 SET checking_status = CASE
